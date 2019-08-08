@@ -2,11 +2,16 @@
 
 namespace SoftUniBlogBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use SoftUniBlogBundle\Entity\Role;
 use SoftUniBlogBundle\Entity\User;
 use SoftUniBlogBundle\Form\UserType;
+use SoftUniBlogBundle\Service\Message\MessageServiceInterface;
 use SoftUniBlogBundle\Service\Users\UserServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -17,9 +22,16 @@ class UserController extends Controller
      */
     private $userService;
 
-    public function __construct(UserServiceInterface $userService)
+    /**
+     * @var MessageServiceInterface
+     */
+    private $messageService;
+
+    public function __construct(UserServiceInterface $userService,
+                                MessageServiceInterface $messageService)
     {
         $this->userService = $userService;
+        $this->messageService = $messageService;
     }
 
     /**
@@ -45,6 +57,19 @@ class UserController extends Controller
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
+        if(null !== $this
+                ->userService->findOneByEmail($form["email"]->getData())){
+            $email = $this->userService->findOneByEmail($form["email"]->getData())
+            ->getEmail();
+            $this->addFlash("errors", "Email $email already taken!");
+            return $this->returnRegisterView($user);
+        }
+
+        if($form["password"]["first"]->getData() !== $form["password"]["second"]->getData()){
+            $this->addFlash("errors", "Password mismatch!");
+            return $this->returnRegisterView($user);
+        }
+
         $this->userService->save($user);
 
             return $this->redirectToRoute("security_login");
@@ -57,7 +82,50 @@ class UserController extends Controller
     public function profile()
     {
         return $this->render("users/profile.html.twig",
-            ["user" => $this->userService->currentUser()]);
+            [
+                "user" => $this->userService->currentUser(),
+                "msg" => $this->messageService->getAllUnseenByUser()
+            ]);
+    }
+
+    /**
+     * @Route("/profile/edit", name="user_edit_profile", methods={"GET"})
+     *
+     * @Security("is_granted('IS_AUTHENTICATED_FULLY')")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function edit()
+    {
+        $currentUser = $this->userService->currentUser();
+        return $this->render("users/edit.html.twig",
+            [
+                "user" => $currentUser,
+                "form" => $this->createForm(UserType::class)
+                ->createView()
+            ]);
+    }
+
+    /**
+     * @Route("/profile/edit", methods={"POST"})
+     *
+     * @Security("is_granted('IS_AUTHENTICATED_FULLY')")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function editProcess(Request $request)
+    {
+        $currentUser = $this->userService->currentUser();
+        $form = $this->createForm(UserType::class, $currentUser);
+        if($currentUser->getEmail() === $request->request->get("email")){
+            $form->remove("email");
+        }
+        $form->remove("password");
+
+        $form->handleRequest($request);
+
+        $this->uploadFile($form, $currentUser);
+        $this->userService->update($currentUser);
+        return $this->redirectToRoute("user_profile");
     }
 
     /**
@@ -67,5 +135,49 @@ class UserController extends Controller
     public function logout()
     {
         throw new \Exception("Logout failed!");
+    }
+
+    /**
+     * @param FormInterface $form
+     * @param User $user
+     */
+    private function uploadFile(FormInterface $form, User $user)
+    {
+        /**
+         * @var UploadedFile $file
+         */
+        $file = $form["image"]->getData();
+
+        $fileName = md5(uniqid()) . "." . $file->guessExtension();
+
+        if ($file) {
+            $file->move(
+                $this->getParameter("users_directory"),
+                $fileName
+            );
+            $user->setImage($fileName);
+        }else{
+            //$form->remove("image");
+        }
+
+//        $fs = new filesystem();
+//        $file = $this->getParameter("users_directory")
+//            ."/"
+//            .$user->getImage();
+//        $fs->remove(array($file));
+    }
+
+    /**
+     * @param User $user
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function returnRegisterView(User $user): \Symfony\Component\HttpFoundation\Response
+    {
+        return $this->render("users/register.html.twig",
+            [
+                "user" => $user,
+                "form" => $this->createForm(UserType::class)
+                    ->createView()
+            ]);
     }
 }

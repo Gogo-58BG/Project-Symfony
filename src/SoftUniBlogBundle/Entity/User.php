@@ -5,6 +5,7 @@ namespace SoftUniBlogBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * User
@@ -24,6 +25,7 @@ class User implements UserInterface
     private $id;
 
     /**
+     * @Assert\Email()
      * @var string
      *
      * @ORM\Column(name="email", type="string", length=255, unique=true)
@@ -31,6 +33,10 @@ class User implements UserInterface
     private $email;
 
     /**
+     * @Assert\Length(
+     *      min = 3,
+     *      minMessage = "Password must be at least 3 characters long",
+     * )
      * @var string
      *
      * @ORM\Column(name="password", type="string", length=255)
@@ -38,11 +44,19 @@ class User implements UserInterface
     private $password;
 
     /**
+     * @Assert\NotBlank(message = 'Full name should not be blank.')
      * @var string
      *
      * @ORM\Column(name="fullName", type="string", length=255)
      */
     private $fullName;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="image", type="string", length=255)
+     */
+    private $image;
 
     /**
      * @var ArrayCollection
@@ -64,10 +78,32 @@ class User implements UserInterface
      */
     private $roles;
 
+    /**
+     * @var ArrayCollection|Comment[]
+     *
+     * @ORM\OneToMany(targetEntity="SoftUniBlogBundle\Entity\Comment", mappedBy="author")
+     */
+    private $comments;
+
+    /**
+     * @var ArrayCollection|Message[]
+     * @ORM\OneToMany(targetEntity="SoftUniBlogBundle\Entity\Message", mappedBy="sender")
+     */
+    private $senderMessages;
+
+    /**
+     * @var ArrayCollection|Message[]
+     * @ORM\OneToMany(targetEntity="SoftUniBlogBundle\Entity\Message", mappedBy="recipient")
+     */
+    private $recipientMessages;
+
     public function __construct()
     {
         $this->articles = new ArrayCollection();
         $this->roles = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+        $this->senderMessages = new ArrayCollection();
+        $this->recipientMessages = new ArrayCollection();
     }
 
 
@@ -257,5 +293,74 @@ class User implements UserInterface
     {
         return in_array("ROLE_ADMIN", $this->getRoles());
     }
+
+    /**
+     * @return string
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string $image
+     */
+    public function setImage(string $image)
+    {
+        $this->image = $image;
+    }
+
+    /**
+     * @return ArrayCollection|Comment[]
+     */
+    public function getComments()
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @param Comment $comments
+     * @return User
+     */
+    public function setComments(Comment $comments)
+    {
+        $this->comments[] = $comments;
+        return $this;
+    }
+
+    /**
+     * @return ArrayCollection|Message[]
+     */
+    public function getSenderMessages()
+    {
+        return $this->senderMessages;
+    }
+
+    /**
+     * @param ArrayCollection|Message[] $senderMessages
+     */
+    public function setSenderMessages($senderMessages): void
+    {
+        $this->senderMessages = $senderMessages;
+    }
+
+    /**
+     * @return ArrayCollection|Message[]
+     */
+    public function getRecipientMessages()
+    {
+        return $this->recipientMessages;
+    }
+
+    /**
+     * @param ArrayCollection|Message[] $recipientMessages
+     */
+    public function setRecipientMessages($recipientMessages): void
+    {
+        $this->recipientMessages = $recipientMessages;
+    }
+
+
+
 }
 

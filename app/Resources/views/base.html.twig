@@ -8,12 +8,13 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>{% block title %}SoftUni Blog{% endblock %}</title>
+    <title>{% block title %}Blog{% endblock %}</title>
     {% block stylesheets %}
         <link rel="stylesheet" href="{{ asset('css/style.css') }}">
         <link rel="stylesheet" href="{{ asset('css/bootstrap-datetimepicker.min.css') }}">
     {% endblock %}
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+    <script src="{{ asset('js/jquery-3.3.1.min.js') }}"></script>
     <script>
         setTimeout(function () {
             $("#info").fadeOut();
@@ -25,10 +26,11 @@
 
 {% block header %}
     <header>
+
         <div class="navbar navbar-default navbar-static-top" role="navigation">
             <div class="container">
                 <div class="navbar-header">
-                    <a href="{{ path('blog_index') }}" class="navbar-brand">SOFTUNI BLOG</a>
+                    <a href="{{ path('blog_index') }}" class="navbar-brand">BLOG</a>
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -38,19 +40,16 @@
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
                         {% if app.user %}
+                            {% if app.user.isAdmin() %}
+                                <li>
+                                    <a href="{{ path('admin_users') }}" class="navbar-brand">
+                                        Admin Panel
+                                    </a>
+                                </li>
+                            {% endif %}
                             <li>
-                                <a href="{{ path('user_profile') }}" class="navbar-brand">
-                                    My Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ path('my_articles') }}" class="navbar-brand">
-                                    My Articles
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ path('article_create') }}" class="navbar-brand">
-                                    Create Article
+                                <a href="{{ path("user_profile") }}">
+                                    <img class="rounded-circle" src="{{ asset('uploads/images/users/' ~ app.getUser().image) }}" width="80" height="40">
                                 </a>
                             </li>
                             <li>
@@ -74,6 +73,41 @@
                 </div>
             </div>
         </div>
+        <div id="mySidenav" class="sidenav">
+            <div class="container-fluid">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                {% if app.user %}
+                    {% if app.user.isAdmin() %}
+                        <li>
+                            <a href="{{ path('admin_users') }}" class="navbar-brand">
+                                Admin Panel
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li>
+
+                        <a href="{{ path('user_mailbox') }}" class="navbar-brand"><span class="glyphicon glyphicon-envelope"></span> Messages
+                        </a>
+
+                    </li>
+                    <li>
+                        <a href="{{ path('user_profile') }}" class="navbar-brand">
+                            My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('my_articles') }}" class="navbar-brand">
+                            My Articles
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('article_create') }}" class="navbar-brand">
+                            Create Article
+                        </a>
+                    </li>
+                {% endif %}
+        </div></div>
+        <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; open</span>
     </header>
 {% endblock %}
 
@@ -90,13 +124,23 @@
 {% block footer %}
     <footer>
         <div class="container modal-footer">
-            <p>&copy; 2018 - Software University Foundation</p>
+            <p>&copy; July 2019 - PHP MVC Frameworks - Symfony, Ivan Yonkov and Mihail Velikov</p>
         </div>
     </footer>
+
+    <script>
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+        }
+    </script>
 {% endblock %}
 
 {% block javascripts %}
-    <script src="{{ asset('js/jquery-3.3.1.min.js') }}"></script>
+
     <script src="{{ asset('js/moment.min.js') }}"></script>
     <script src="{{ asset('js/bootstrap.js') }}"></script>
     <script src="{{ asset('js/bootstrap-datetimepicker.min.js') }}"></script>

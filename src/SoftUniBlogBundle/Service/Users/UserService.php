@@ -48,6 +48,7 @@ class UserService implements UserServiceInterface
         $user->setPassword($passwordHash);
         $userRole = $this->roleService->findOneBy("ROLE_USER");
         $user->addRole($userRole);
+        $user->setImage("");
         return $this->userRepository->insert($user);
     }
 
@@ -75,5 +76,15 @@ class UserService implements UserServiceInterface
     public function currentUser(): ?User
     {
         return $this->security->getUser();
+    }
+
+    public function update(User $user): bool
+    {
+        return $this->userRepository->update($user);
+    }
+
+    public function getAll()
+    {
+        return $this->userRepository->findAll();
     }
 }

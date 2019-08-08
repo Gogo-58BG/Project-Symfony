@@ -7,15 +7,17 @@
             {% for article in articles %}
                 <div class="col-md-12">
                     <article>
-                        {% if article.imageURL is not empty %}
-                            <a href="{{ path('article_view', {id: article.id}) }}">
-                                <img src="{{ article.imageURL }}" width="400px" height="200px">
-                            </a>
-                        {% endif %}
+                        {% if app.getUser() and (app.getUser().isAuthor(article)) %}
                         <header>
                             <h2>{{ article.title }}</h2>
                         </header>
 
+
+                        {% if article.image is not empty %}
+                            <a href="{{ path('article_view', {id: article.id}) }}">
+                                <img src="{{ asset('uploads/images/articles/' ~ article.image) }}" width="400px" height="200px">
+                            </a>
+                        {% endif %}
                         <p>
                             {{ article.content }}
                         </p>
@@ -26,6 +28,7 @@
                                 <a class="btn btn-danger btn-xs" href="{{ path('article_delete', {id:article.id}) }}">Delete &raquo;</a>
                                 <a class="btn btn-default btn-xs" href="{{ path('blog_index') }}">back &raquo;</a>
                             </div>
+                            {% endif %}
                         </footer>
                     </article>
                 </div>

@@ -4,10 +4,14 @@ namespace SoftUniBlogBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use SoftUniBlogBundle\Entity\Article;
+use SoftUniBlogBundle\Entity\Comment;
 use SoftUniBlogBundle\Entity\User;
 use SoftUniBlogBundle\Form\ArticleType;
 use SoftUniBlogBundle\Service\Articles\ArticleServiceInterface;
+use SoftUniBlogBundle\Service\Comment\CommentServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,14 +22,21 @@ class ArticleController extends Controller
      * @var ArticleServiceInterface
      */
     private $articleService;
+    /**
+     * @var CommentServiceInterface
+     */
+    private $commentService;
 
     /**
      * ArticleController constructor.
-     * @param $articleService
+     * @param CommentServiceInterface $commentService
+     * @param ArticleServiceInterface $articleService
      */
-    public function __construct(ArticleServiceInterface $articleService)
+    public function __construct(CommentServiceInterface $commentService,
+                                ArticleServiceInterface $articleService)
     {
         $this->articleService = $articleService;
+        $this->commentService = $commentService;
     }
 
 
@@ -59,6 +70,8 @@ class ArticleController extends Controller
         $article = new Article();
         $form = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
+        $this->uploadFile($form, $article);
+
         $this->articleService->create($article);
 
             $this->addFlash("info", "Article created successfully.");
@@ -106,7 +119,7 @@ class ArticleController extends Controller
 
         $form = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
-
+        $this->uploadFile($form, $article);
             $this->articleService->edit($article);
             return $this->redirectToRoute("blog_index");
 
@@ -181,8 +194,11 @@ class ArticleController extends Controller
         $em->persist($article);
         $em->flush();
 
+        $comments = $this->commentService->getAllByArticleId($id);
+
         return $this->render("articles/view.html.twig",
-        ["article" => $article]);
+        ["article" => $article,
+            "comments" => $comments]);
     }
 
     /**
@@ -211,5 +227,27 @@ class ArticleController extends Controller
     $articles = $this->articleService->getAllArticlesByAuthor();
     return $this->render("articles/myArticles.html.twig",
         ["articles" => $articles]);
+    }
+
+    /**
+     * @param \Symfony\Component\Form\FormInterface $form
+     * @param Article $article
+     */
+    private function uploadFile(FormInterface $form, Article $article)
+    {
+        /**
+         * @var UploadedFile $file
+         */
+        $file = $form["image"]->getData();
+
+        $fileName = md5(uniqid()) . "." . $file->guessExtension();
+
+        if ($file) {
+            $file->move(
+                $this->getParameter("articles_directory"),
+                $fileName
+            );
+            $article->setImage($fileName);
+        }
     }
 }

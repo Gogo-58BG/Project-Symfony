@@ -2,17 +2,22 @@
 
 {% block body %}
 
+    {% for msg in app.session.flashBag.get("message") %}
+        <div class="alert alert-success" id="info">
+            {{ msg }}
+        </div>
+    {% endfor %}
+
     <div class="container body-content">
         <div class="row">
             <div class="col-md-12">
                 <article>
-                    {% if article.imageURL is not empty %}
-                            <img src="{{ article.imageURL }}" width="400px" height="200px">
-                    {% endif %}
                     <header>
                         <h2>{{ article.title }}</h2>
                     </header>
-
+                    {% if article.image is not empty %}
+                        <img src="{{ asset('uploads/images/articles/' ~ article.image) }}" width="400px" height="200px">
+                    {% endif %}
                     <p>
                         {{ article.content }}
                     </p>
@@ -31,8 +36,44 @@
                         </div>
                     </footer>
                 </article>
+                {% if app.getUser() %}
+                <br>
+                <a class="btn btn-success btn-sm"  id="add">Add Comment</a>
+                <div id="comment"></div>
+                {% endif %}
+                <br>
+                <hr class="new"/>
+                {% for comment in comments %}
+                    <p>{{ comment.content }}</p>
+                    <br>{{ comment.author.fullName }}
+                    <a href="{{ path('user_message', {id: comment.author.id}) }}">
+                        <img class="rounded-circle" src="{{ asset('uploads/images/users/' ~ comment.author.image) }}" width="35" height="15">
+                    </a>
+                    <br><small>{{ comment.dateAdded|date("F jS \\a\\t g:ia") }}</small>
+                    <hr class="new"/>
+                {% endfor %}
+
             </div>
         </div>
     </div>
 
+<script>
+    $("#add").click(function () {
+        $("#comment").empty();
+        let commentForm =
+            `
+<form method="post" action="{{ path('comment_create', {id: article.getId}) }}">
+            <div class="form-group">
+                       <!-- <label class="col-sm-4 control-label" for="article_content">Content</label> -->
+                        <div class="col-sm-6">
+                        <textarea class="form-control" rows="6" id="article_content" name="comment[content]"></textarea>
+                        <input type="submit" value="Add" class="btn btn-success btn-sm">
+                        </div>
+                    </div>
+</form>            `;
+
+        $("#comment").append(commentForm);
+        $("#comment").toggle();
+    })
+</script>
 {% endblock %}

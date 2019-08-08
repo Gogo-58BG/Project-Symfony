@@ -2,6 +2,7 @@
 
 namespace SoftUniBlogBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -64,9 +65,9 @@ class Article
     /**
      * @var string
      *
-     * @ORM\Column(name="image_url", type="text")
+     * @ORM\Column(name="image", type="string", length=255)
      */
-    private $imageURL;
+    private $image;
 
     /**
      * @var integer
@@ -75,9 +76,17 @@ class Article
      */
     private $viewCount;
 
+    /**
+     * @var ArrayCollection|Comment[]
+     *
+     * @ORM\OneToMany(targetEntity="SoftUniBlogBundle\Entity\Comment", mappedBy="article")
+     */
+    private $comments;
+
     public function __construct()
     {
         $this->dateAdded = new \DateTime("now");
+        $this->comments = new ArrayCollection();
     }
 
 
@@ -221,22 +230,6 @@ class Article
     }
 
     /**
-     * @return string
-     */
-    public function getImageURL()
-    {
-        return $this->imageURL;
-    }
-
-    /**
-     * @param string $imageURL
-     */
-    public function setImageURL(string $imageURL)
-    {
-        $this->imageURL = $imageURL;
-    }
-
-    /**
      * @return int
      */
     public function getAuthorId()
@@ -251,6 +244,40 @@ class Article
     public function setAuthorId(int $authorId)
     {
         $this->authorId = $authorId;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string $image
+     */
+    public function setImage(string $image)
+    {
+        $this->image = $image;
+    }
+
+    /**
+     * @return ArrayCollection|Comment[]
+     */
+    public function getComments()
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @param ArrayCollection $comments
+     * @return Article
+     */
+    public function setComments(ArrayCollection $comments)
+    {
+        $this->comments = $comments;
         return $this;
     }
 }
