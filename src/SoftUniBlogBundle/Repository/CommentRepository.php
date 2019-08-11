@@ -41,4 +41,22 @@ class CommentRepository extends \Doctrine\ORM\EntityRepository
             return false;
         }
     }
+
+    /**
+     * @param Comment $comment
+     * @return bool
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function remove(Comment $comment)
+    {
+
+        try {
+            $this->_em->remove($comment);
+            $this->_em->flush();
+            return true;
+        } catch (OptimisticLockException $e) {
+            return false;
+        }
+    }
 }

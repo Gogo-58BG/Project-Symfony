@@ -50,7 +50,13 @@
                         <img class="rounded-circle" src="{{ asset('uploads/images/users/' ~ comment.author.image) }}" width="35" height="15">
                     </a>
                     <br><small>{{ comment.dateAdded|date("F jS \\a\\t g:ia") }}</small>
+                    <br>
+                    {% if app.getUser().isAdmin %}
+                    <a class="btn btn-danger btn-xs" href="{{ path('comment_delete', {id:comment.id}) }}">Delete &raquo;</a>
+                {% endif %}
+
                     <hr class="new"/>
+
                 {% endfor %}
 
             </div>

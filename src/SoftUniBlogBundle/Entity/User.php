@@ -5,6 +5,7 @@ namespace SoftUniBlogBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 /**
@@ -25,6 +26,7 @@ class User implements UserInterface
     private $id;
 
     /**
+     * @Assert\Email()
      * @var string
      *
      * @ORM\Column(name="email", type="string", length=255, unique=true)
@@ -32,6 +34,8 @@ class User implements UserInterface
     private $email;
 
     /**
+     *
+     * @Assert\Length(min=3)
      * @var string
      *
      * @ORM\Column(name="password", type="string", length=255)
@@ -39,6 +43,7 @@ class User implements UserInterface
     private $password;
 
     /**
+     * @Assert\NotBlank()
      * @var string
      *
      * @ORM\Column(name="fullName", type="string", length=255)

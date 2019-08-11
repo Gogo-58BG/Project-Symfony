@@ -15,5 +15,7 @@ interface CommentServiceInterface
      * @return Comment[]
      */
     public function getAllByArticleId(int $articleId);
-    public function getOne():?Comment;
+    public function getOne(int $id):?Comment;
+
+    public function delete($comment);
 }

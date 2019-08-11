@@ -39,9 +39,13 @@ class CommentService implements CommentServiceInterface
            ->findBy(["article" => $article], ["dateAdded" => "DESC"]);;
     }
 
-    public function getOne(): ?Comment
+    /**
+     * @param int $id
+     * @return Comment|null|object
+     */
+    public function getOne(int $id): ?Comment
     {
-        // TODO: Implement getOne() method.
+        return $this->commentRepository->find($id);
     }
 
     /**
@@ -56,5 +60,10 @@ class CommentService implements CommentServiceInterface
         $comment->setAuthor($this->userService->currentUser())
             ->setArticle($this->articleService->getOne($articleId));
         return $this->commentRepository->insert($comment);
+    }
+
+    public function delete($comment)
+    {
+        return $this->commentRepository->remove($comment);
     }
 }

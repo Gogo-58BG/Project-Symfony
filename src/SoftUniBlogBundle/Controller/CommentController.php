@@ -76,4 +76,47 @@ class CommentController extends Controller
     {
 
     }
+
+    /**
+     * @Route("/delete/comment/{id}", name="comment_delete", methods={"GET"})
+     *
+     * @Security("is_granted('IS_AUTHENTICATED_FULLY')")
+     *
+     * @param Request $request
+     * @param $id
+     * @return Response
+     */
+    public function delete(int $id)
+    {
+        $comment = $this->commentService->getOne($id);
+
+        if(null === $comment){
+            return $this->redirectToRoute("blog_index");
+        }
+
+        return $this->render('comments/delete.html.twig',
+            ["form" => $this->createForm(CommentType::class)
+                ->createView(),
+                "comment" => $comment]);
+    }
+
+    /**
+     * @Route("/delete/comment/{id}", methods={"POST"})
+     *
+     * @Security("is_granted('IS_AUTHENTICATED_FULLY')")
+     *
+     * @param Request $request
+     * @param $id
+     * @return Response
+     */
+    public function deleteProcess(Request $request, int $id)
+    {
+        $comment = $this->commentService->getOne($id);
+
+        $form = $this->createForm(CommentType::class, $comment);
+
+        $form->handleRequest($request);
+        $this->commentService->delete($comment);
+        return $this->redirectToRoute("blog_index");
+    }
 }

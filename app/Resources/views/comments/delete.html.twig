@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <div class="container body-content span=8 offset=2">
+        <div class="well">
+            <form class="form-horizontal" action="{{ path('comment_delete', {id: comment.id}) }}" method="POST">
+                <fieldset>
+                    <legend>Delete Comment</legend>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label" for="message_about">Comment Content</label>
+                        <div class="col-sm-4 ">
+                            <input type="text" class="form-control" id="message_about" placeholder="Message About"
+                                   name="message[about]" value="{{ comment.content }}" disabled>
+                        </div>
+                    </div>
+
+                    {{ form_row(form._token) }}
+
+                    <div class="form-group">
+                        <div class="col-sm-4 col-sm-offset-4">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
